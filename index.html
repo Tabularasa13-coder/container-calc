@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2980B9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Загрузка контейнера</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi0J3QvtCx0L7QvdCx0YPRgNC10YIg0L3QtdCy0LXRgNC10YIiLCJzaG9ydF9uYW1lIjoi0J3QvtCx0L7QvdCx0YPRgCIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjZjBmMGYwIiwidGhlbWVfY29sb3IiOiIjMjk4MEI5In0=">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f0f0;
+            color: #2c3e50;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2980B9 0%, #1F618D 100%);
+            color: white;
+            padding: 20px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .header .subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+        
+        .container {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A5276;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #7f8c8d;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .progress-section {
+            margin-bottom: 16px;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        
+        .progress-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        .progress-value {
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            height: 12px;
+            background: #ecf0f1;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27AE60 0%, #2ECC71 100%);
+            transition: width 0.3s ease, background 0.3s ease;
+            border-radius: 6px;
+        }
+        
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #F39C12 0%, #F1C40F 100%);
+        }
+        
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #E74C3C 0%, #C0392B 100%);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        
+        .status-ok {
+            background: #E8F8F5;
+            color: #27AE60;
+        }
+        
+        .status-warning {
+            background: #FEF9E7;
+            color: #F39C12;
+        }
+        
+        .status-danger {
+            background: #FDEDEC;
+            color: #E74C3C;
+        }
+        
+        .add-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+            transition: transform 0.1s;
+        }
+        
+        .add-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .product-item {
+            background: white;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            border-left: 4px solid #3498DB;
+        }
+        
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .product-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #2c3e50;
+            flex: 1;
+        }
+        
+        .delete-btn {
+            background: #FDEDEC;
+            color: #E74C3C;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .product-specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .spec-label {
+            color: #95a5a6;
+        }
+        
+        .spec-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 10px;
+        }
+        
+        .qty-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #2980B9;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .qty-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .qty-input {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: #2c3e50;
+            outline: none;
+        }
+        
+        .qty-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-align: center;
+            margin-top: 4px;
+        }
+        
+        .product-total {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 10px;
+            margin-top: 10px;
+            border-top: 1px dashed #ecf0f1;
+            font-size: 13px;
+        }
+        
+        .total-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .total-label {
+            color: #95a5a6;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+        
+        .total-value {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        .action-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-save {
+            background: #27AE60;
+            color: white;
+        }
+        
+        .btn-clear {
+            background: #E74C3C;
+            color: white;
+        }
+        
+        .btn-history {
+            background: #9B59B6;
+            color: white;
+            grid-column: 1 / -1;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1A5276;
+        }
+        
+        .modal input, .modal select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .modal input:focus, .modal select:focus {
+            border-color: #3498DB;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .modal-btn-cancel {
+            background: #ecf0f1;
+            color: #7f8c8d;
+        }
+        
+        .modal-btn-confirm {
+            background: #27AE60;
+            color: white;
+        }
+        
+        .history-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .history-item:active {
+            background: #ecf0f1;
+        }
+        
+        .history-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        
+        .history-info {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .history-delete {
+            float: right;
+            background: #FDEDEC;
+            color: #E74C3C;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+        
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .summary-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .summary-label {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-bottom: 4px;
+        }
+        
+        .summary-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📦 Загрузка контейнера</h1>
+        <div class="subtitle">40 футов стандарт • 23 000 кг / 66.7 м³</div>
+    </div>
+
+    <div class="container">
+        <!-- Параметры контейнера -->
+        <div class="card">
+            <div class="card-title">🚢 Параметры контейнера</div>
+            <div class="info-row">
+                <span class="info-label">Тип:</span>
+                <span class="info-value">40 футов (стандарт)</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Макс. вес:</span>
+                <span class="info-value">23 000 кг</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Макс. объем:</span>
+                <span class="info-value">66.7 м³</span>
+            </div>
+        </div>
+
+        <!-- Индикаторы загрузки -->
+        <div class="card">
+            <div class="card-title">📊 Загрузка</div>
+            
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span class="progress-label">⚖️ Вес</span>
+                    <span class="progress-value" id="weightText">0 / 23 000 кг (0%)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="weightBar" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span class="progress-label">📦 Объем</span>
+                    <span class="progress-value" id="volumeText">0 / 66.7 м³ (0%)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="volumeBar" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div id="statusBadge" class="status-badge status-ok">✅ В пределах нормы</div>
+            
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">Осталось по весу</div>
+                    <div class="summary-value" id="weightRemaining">23 000 кг</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Осталось по объему</div>
+                    <div class="summary-value" id="volumeRemaining">66.7 м³</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Список товаров -->
+        <div id="productsList"></div>
+
+        <!-- Кнопки действий -->
+        <button class="add-btn" onclick="openAddModal()"> Добавить товар</button>
+        
+        <div class="action-buttons">
+            <button class="action-btn btn-save" onclick="openSaveModal()"> Сохранить</button>
+            <button class="action-btn btn-clear" onclick="clearAll()"> Очистить</button>
+            <button class="action-btn btn-history" onclick="openHistoryModal()">📜 История расчетов</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления товара -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <h2>➕ Добавить товар</h2>
+            <select id="productSelect">
+                <option value="">Выберите товар...</option>
+            </select>
+            <input type="number" id="productQty" placeholder="Количество" min="1" inputmode="numeric">
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal('addModal')">Отмена</button>
+                <button class="modal-btn modal-btn-confirm" onclick="addProduct()">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно сохранения -->
+    <div class="modal-overlay" id="saveModal">
+        <div class="modal">
+            <h2>💾 Сохранить расчет</h2>
+            <input type="text" id="saveName" placeholder="Название (например, Контейнер №1)">
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal('saveModal')">Отмена</button>
+                <button class="modal-btn modal-btn-confirm" onclick="saveCalculation()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно истории -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal">
+            <h2>📜 История расчетов</h2>
+            <div id="historyList"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal('historyModal')" style="flex: 1">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Данные
+        const CONTAINER = {
+            name: "40 футов (стандарт)",
+            maxWeight: 23000,
+            maxVolume: 66.7
+        };
+
+        const PRODUCTS = {
+            "Тормозные колодки (комплект)": { weight: 1.5, volume: 0.0015 },
+            "Тормозные диски (1 шт)": { weight: 6.5, volume: 0.0085 },
+            "Фильтр масляный": { weight: 0.27, volume: 0.0013 },
+            "Фильтр воздушный": { weight: 0.37, volume: 0.004 },
+            "Фильтр салонный": { weight: 0.32, volume: 0.004 }
+        };
+
+        let items = [];
+        let history = JSON.parse(localStorage.getItem('containerHistory') || '[]');
+
+        // Инициализация
+        function init() {
+            const select = document.getElementById('productSelect');
+            Object.keys(PRODUCTS).forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            });
+            
+            // Загружаем последний несохраненный расчет
+            const saved = localStorage.getItem('currentCalculation');
+            if (saved) {
+                items = JSON.parse(saved);
+            }
+            
+            render();
+        }
+
+        function render() {
+            renderProducts();
+            updateProgress();
+            saveCurrent();
+        }
+
+        function renderProducts() {
+            const list = document.getElementById('productsList');
+            if (items.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📦</div>
+                        <div>Добавьте товары для расчета загрузки</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = items.map((item, idx) => {
+                const totalWeight = item.weight * item.qty;
+                const totalVolume = item.volume * item.qty;
+                return `
+                    <div class="product-item">
+                        <div class="product-header">
+                            <div class="product-name">${item.name}</div>
+                            <button class="delete-btn" onclick="deleteItem(${idx})">×</button>
+                        </div>
+                        <div class="product-specs">
+                            <div class="spec-item">
+                                <span class="spec-label">Вес 1 шт:</span>
+                                <span class="spec-value">${item.weight} кг</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Объем 1 шт:</span>
+                                <span class="spec-value">${item.volume} м³</span>
+                            </div>
+                        </div>
+                        <div 
