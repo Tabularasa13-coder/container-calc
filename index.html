@@ -69,6 +69,15 @@
         .summary-item { background: #f8f9fa; padding: 12px; border-radius: 10px; text-align: center; }
         .summary-label { font-size: 11px; color: #7f8c8d; }
         .summary-value { font-size: 16px; font-weight: 700; color: #2c3e50; }
+        .capacity-info { background: #E8F8F5; padding: 12px; border-radius: 10px; margin-top: 12px; border-left: 4px solid #27AE60; }
+        .capacity-info.warning { background: #FEF9E7; border-left-color: #F39C12; }
+        .capacity-info.danger { background: #FDEDEC; border-left-color: #E74C3C; }
+        .capacity-title { font-weight: 600; color: #27AE60; margin-bottom: 8px; font-size: 14px; }
+        .capacity-info.warning .capacity-title { color: #F39C12; }
+        .capacity-info.danger .capacity-title { color: #E74C3C; }
+        .capacity-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+        .capacity-label { color: #7f8c8d; }
+        .capacity-value { font-weight: 600; color: #2c3e50; }
     </style>
 </head>
 <body>
@@ -122,7 +131,7 @@
     <div class="modal-overlay" id="addModal" onclick="if(event.target===this)closeModal('addModal')">
         <div class="modal">
             <h2>➕ Добавить товар</h2>
-            <select id="productSelect">
+            <select id="productSelect" onchange="updateCapacityInfo()">
                 <option value="">Выберите товар...</option>
                 <option value="Тормозные колодки (комплект)">Тормозные колодки (комплект)</option>
                 <option value="Тормозные диски (1 шт)">Тормозные диски (1 шт)</option>
@@ -130,6 +139,9 @@
                 <option value="Фильтр воздушный">Фильтр воздушный</option>
                 <option value="Фильтр салонный">Фильтр салонный</option>
             </select>
+            
+            <div id="capacityInfo" style="display:none;"></div>
+            
             <input type="number" id="productQty" placeholder="Количество" min="1">
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-cancel" onclick="closeModal('addModal')">Отмена</button>
@@ -234,17 +246,71 @@
             const badge = document.getElementById('statusBadge');
             if (totalWeight > CONTAINER.maxWeight || totalVolume > CONTAINER.maxVolume) {
                 badge.className = 'status-badge status-danger';
-                badge.textContent = '⚠️ ПЕРЕГРУЗ!';
+                badge.textContent = '️ ПЕРЕГРУЗ!';
             } else if (weightPct > 85 || volumePct > 85) {
                 badge.className = 'status-badge status-warning';
-                badge.textContent = '️ Почти заполнен';
+                badge.textContent = '⚠️ Почти заполнен';
             } else {
                 badge.className = 'status-badge status-ok';
                 badge.textContent = '✅ В пределах нормы';
             }
         }
 
-        function openAddModal() { document.getElementById('productQty').value = ''; document.getElementById('productSelect').value = ''; document.getElementById('addModal').classList.add('active'); }
+        function openAddModal() { 
+            document.getElementById('productQty').value = ''; 
+            document.getElementById('productSelect').value = ''; 
+            document.getElementById('capacityInfo').style.display = 'none';
+            document.getElementById('addModal').classList.add('active'); 
+        }
+        
+        function updateCapacityInfo() {
+            const productName = document.getElementById('productSelect').value;
+            const capacityDiv = document.getElementById('capacityInfo');
+            
+            if (!productName) {
+                capacityDiv.style.display = 'none';
+                return;
+            }
+            
+            const product = PRODUCTS[productName];
+            const currentWeight = items.reduce((sum, i) => sum + i.weight * i.qty, 0);
+            const currentVolume = items.reduce((sum, i) => sum + i.volume * i.qty, 0);
+            
+            const remainingWeight = CONTAINER.maxWeight - currentWeight;
+            const remainingVolume = CONTAINER.maxVolume - currentVolume;
+            
+            const maxByWeight = Math.floor(remainingWeight / product.weight);
+            const maxByVolume = Math.floor(remainingVolume / product.volume);
+            const maxPossible = Math.min(maxByWeight, maxByVolume);
+            
+            let className = 'capacity-info';
+            let icon = '✅';
+            if (maxPossible === 0) {
+                className += ' danger';
+                icon = '';
+            } else if (maxPossible < 100) {
+                className += ' warning';
+                icon = '️';
+            }
+            
+            capacityDiv.className = className;
+            capacityDiv.innerHTML = `
+                <div class="capacity-title">${icon} Можно добавить: <strong>${maxPossible.toLocaleString('ru-RU')} шт.</strong></div>
+                <div class="capacity-row">
+                    <span class="capacity-label">По весу:</span>
+                    <span class="capacity-value">${maxByWeight.toLocaleString('ru-RU')} шт.</span>
+                </div>
+                <div class="capacity-row">
+                    <span class="capacity-label">По объему:</span>
+                    <span class="capacity-value">${maxByVolume.toLocaleString('ru-RU')} шт.</span>
+                </div>
+                <div class="capacity-row" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,0,0,0.1);font-size:12px;">
+                    <span class="capacity-label">1 шт = ${product.weight} кг / ${product.volume} м³</span>
+                </div>
+            `;
+            capacityDiv.style.display = 'block';
+        }
+        
         function openSaveModal() { if (items.length === 0) { alert('Добавьте хотя бы один товар!'); return; } document.getElementById('saveName').value = ''; document.getElementById('saveModal').classList.add('active'); }
         function openHistoryModal() { renderHistory(); document.getElementById('historyModal').classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -298,7 +364,6 @@
 
         function deleteHistory(id) { if (!confirm('Удалить этот расчет из истории?')) return; history = history.filter(h => h.id !== id); localStorage.setItem('containerHistory', JSON.stringify(history)); renderHistory(); }
 
-        // Запуск при загрузке
         window.onload = init;
     </script>
 </body>
